@@ -1,4 +1,3 @@
-// controllers/videoController.js
 const Video = require('../models/Video');
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
@@ -8,26 +7,41 @@ exports.uploadVideo = async (req, res) => {
   try {
     const { title } = req.body;
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      // Remove uploaded file if title is missing
+      fs.unlink(req.file.path, () => {});
+      return res.status(400).json({ msg: 'Title is required' });
+    }
 
     // Generate thumbnail
     const videoPath = req.file.path;
     const thumbnailFilename = `${Date.now()}_thumb.jpg`;
-    const thumbnailPath = path.join(__dirname, '..', 'thumbnails', thumbnailFilename);
+    const thumbnailDir = path.join(__dirname, '..', 'thumbnails');
+    const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
-    await new Promise((resolve, reject) => {
-      ffmpeg(videoPath)
-        .on('end', resolve)
-        .on('error', reject)
-        .screenshots({
-          count: 1,
-          filename: thumbnailFilename,
-          folder: path.join(__dirname, '..', 'thumbnails'),
-          size: '320x240'
-        });
-    });
+    // Ensure thumbnails directory exists
+    if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir);
+
+    try {
+      await new Promise((resolve, reject) => {
+        ffmpeg(videoPath)
+          .on('end', resolve)
+          .on('error', reject)
+          .screenshots({
+            count: 1,
+            filename: thumbnailFilename,
+            folder: thumbnailDir,
+            size: '320x240'
+          });
+      });
+    } catch (ffmpegErr) {
+      // Remove uploaded file if thumbnail fails
+      fs.unlink(videoPath, () => {});
+      return res.status(500).json({ msg: 'Failed to generate thumbnail. Is ffmpeg installed?' });
+    }
 
     const video = new Video({
-      title,
+      title: title.trim(),
       filename: req.file.filename,
       thumbnail: thumbnailFilename,
       uploadedBy: req.user.id
@@ -45,7 +59,12 @@ exports.uploadVideo = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ msg: 'Upload error', error: err.message });
+    // Only show full error in development
+    const isDev = process.env.NODE_ENV !== 'production';
+    res.status(500).json({
+      msg: 'Upload error',
+      ...(isDev && { error: err.message })
+    });
   }
 };
 
