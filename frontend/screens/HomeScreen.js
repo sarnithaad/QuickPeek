@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Button, ActivityIndicator, Alert } from 'react-native';
 import axios from 'axios';
 import { Video } from 'expo-av';
 
-const API_URL = 'http://localhost:5000/api/videos';
+const API_URL = 'https://quickpeek.onrender.com/api/videos';
 
 export default function HomeScreen({ navigation, token, setToken }) {
   const [videos, setVideos] = useState([]);
@@ -11,20 +11,28 @@ export default function HomeScreen({ navigation, token, setToken }) {
 
   const fetchVideos = async () => {
     setLoading(true);
-    const res = await axios.get(API_URL);
-    setVideos(res.data);
+    try {
+      const res = await axios.get(API_URL);
+      setVideos(res.data);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to load videos');
+    }
     setLoading(false);
   };
 
   useEffect(() => { fetchVideos(); }, []);
 
   const likeVideo = async (id, idx) => {
-    await axios.post(`${API_URL}/like/${id}`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const updated = [...videos];
-    updated[idx].likes += 1;
-    setVideos(updated);
+    try {
+      await axios.post(`${API_URL}/like/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const updated = [...videos];
+      updated[idx].likes += 1;
+      setVideos(updated);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to like video');
+    }
   };
 
   if (loading) return <ActivityIndicator style={{ flex:1 }} size="large" />;
@@ -39,14 +47,14 @@ export default function HomeScreen({ navigation, token, setToken }) {
         renderItem={({ item, index }) => (
           <View style={styles.card}>
             <Video
-              source={{ uri: `http://localhost:5000${item.url}` }}
+              source={{ uri: `https://quickpeek.onrender.com${item.url}` }}
               style={styles.video}
               useNativeControls
               resizeMode="cover"
               isLooping
             />
             <View style={styles.info}>
-              <Image source={{ uri: `http://localhost:5000${item.thumbnail}` }} style={styles.thumb} />
+              <Image source={{ uri: `https://quickpeek.onrender.com${item.thumbnail}` }} style={styles.thumb} />
               <View style={{ flex:1 }}>
                 <Text style={styles.title}>{item.title}</Text>
                 <TouchableOpacity style={styles.likeBtn} onPress={() => likeVideo(item.id, index)}>
