@@ -2,33 +2,31 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = 'https://quickpeek.onrender.com/api/auth';
 
-export default function LoginScreen({ setToken }) {
+export default function LoginScreen({ navigation, setToken }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
 
-  const handleAuth = async () => {
+  const handleLogin = async () => {
     try {
-      const endpoint = isRegister ? '/register' : '/login';
-      const res = await axios.post(API_URL + endpoint, { email, password });
+      const res = await axios.post(API_URL + '/login', { email, password });
       setToken(res.data.token);
     } catch (e) {
-      Alert.alert('Error', e.response?.data?.msg || 'Auth failed');
+      Alert.alert('Error', e.response?.data?.msg || 'Login failed');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{isRegister ? 'Register' : 'Login'}</Text>
+      <Text style={styles.title}>Login</Text>
       <TextInput style={styles.input} placeholder="Email" value={email}
         onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
       <TextInput style={styles.input} placeholder="Password" value={password}
         onChangeText={setPassword} secureTextEntry />
-      <Button title={isRegister ? "Register" : "Login"} onPress={handleAuth} />
-      <Text style={styles.toggle} onPress={() => setIsRegister(!isRegister)}>
-        {isRegister ? "Already have an account? Login" : "No account? Register"}
+      <Button title="Login" onPress={handleLogin} />
+      <Text style={styles.toggle} onPress={() => navigation.navigate('Register')}>
+        Don't have an account? Register
       </Text>
     </View>
   );
