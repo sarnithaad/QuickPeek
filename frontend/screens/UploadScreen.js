@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import { Video } from 'expo-av';
 
-const API_URL = 'http://localhost:5000/api/videos/upload';
+const API_URL = 'https://quickpeek.onrender.com/api/videos/upload';
 
 export default function UploadScreen({ navigation, token }) {
   const [video, setVideo] = useState(null);
@@ -12,12 +13,16 @@ export default function UploadScreen({ navigation, token }) {
   const [thumb, setThumb] = useState(null);
 
   const pickVideo = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-      allowsEditing: false,
-      quality: 0.5,
-    });
-    if (!result.cancelled) setVideo(result);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        allowsEditing: false,
+        quality: 0.5,
+      });
+      if (!result.canceled) setVideo(result.assets[0]);
+    } catch (e) {
+      Alert.alert('Error', 'Could not pick video');
+    }
   };
 
   const handleUpload = async () => {
@@ -37,7 +42,7 @@ export default function UploadScreen({ navigation, token }) {
           'Content-Type': 'multipart/form-data'
         }
       });
-      setThumb(`http://localhost:5000${res.data.video.thumbnail}`);
+      setThumb(`https://quickpeek.onrender.com${res.data.video.thumbnail}`);
       Alert.alert('Success', 'Video uploaded');
       setTitle('');
       setVideo(null);
@@ -51,7 +56,18 @@ export default function UploadScreen({ navigation, token }) {
     <View style={styles.container}>
       <Text style={styles.title}>Upload Video</Text>
       <Button title="Pick Video" onPress={pickVideo} />
-      {video && <Text>Selected: {video.uri.split('/').pop()}</Text>}
+      {video && (
+        <>
+          <Text>Selected: {video.uri.split('/').pop()}</Text>
+          <Video
+            source={{ uri: video.uri }}
+            style={{ width: 200, height: 200, marginVertical: 10 }}
+            useNativeControls
+            resizeMode="contain"
+            isLooping
+          />
+        </>
+      )}
       <TextInput style={styles.input} placeholder="Enter title" value={title} onChangeText={setTitle} />
       <Button title="Upload" onPress={handleUpload} disabled={uploading} />
       {uploading && <ActivityIndicator size="large" />}
