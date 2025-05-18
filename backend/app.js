@@ -3,19 +3,26 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const authRoutes = require('./routes/auth');
 const videoRoutes = require('./routes/video');
 
 const app = express();
 
+// Ensure uploads and thumbnails directories exist
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const THUMBNAILS_DIR = path.join(__dirname, 'thumbnails');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
+if (!fs.existsSync(THUMBNAILS_DIR)) fs.mkdirSync(THUMBNAILS_DIR);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Static file serving for uploads and thumbnails
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/thumbnails', express.static(path.join(__dirname, 'thumbnails')));
+app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/thumbnails', express.static(THUMBNAILS_DIR));
 
 // Root route for Render health check and browser visits
 app.get('/', (req, res) => {
