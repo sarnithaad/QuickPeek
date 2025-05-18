@@ -1,3 +1,4 @@
+// controllers/videoController.js
 const Video = require('../models/Video');
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
