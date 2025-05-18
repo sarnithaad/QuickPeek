@@ -5,7 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { Video } from 'expo-av';
 
-const API_URL = 'https://quickpeek.onrender.com/api/videos/upload';
+const API_BASE = 'https://quickpeek.onrender.com';
+const API_URL = `${API_BASE}/api/videos/upload`;
 
 export default function UploadScreen({ navigation, token }) {
   const [video, setVideo] = useState(null);
@@ -13,9 +14,14 @@ export default function UploadScreen({ navigation, token }) {
   const [uploading, setUploading] = useState(false);
   const [thumb, setThumb] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [uploadStatus, setUploadStatus] = useState(''); // '', 'uploading', 'success', 'error'
   const theme = useTheme();
 
   const pickVideo = async () => {
+    // Clear previous thumbnail and status when picking a new video
+    setThumb(null);
+    setUploadStatus('');
+    setErrorMsg('');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
@@ -31,10 +37,14 @@ export default function UploadScreen({ navigation, token }) {
   const handleUpload = async () => {
     if (!video || !title) {
       setErrorMsg('Select video and enter title');
+      setUploadStatus('error');
       return;
     }
     setUploading(true);
     setErrorMsg('');
+    setUploadStatus('uploading');
+    setThumb(null); // Hide thumbnail until upload is done
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('video', {
@@ -46,15 +56,17 @@ export default function UploadScreen({ navigation, token }) {
       const res = await axios.post(API_URL, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          // Let axios set Content-Type automatically
         }
       });
-      setThumb(`https://quickpeek.onrender.com${res.data.video.thumbnail}`);
+      setThumb(`${API_BASE}${res.data.video.thumbnail}`);
       setTitle('');
       setVideo(null);
       setErrorMsg('');
+      setUploadStatus('success');
     } catch (e) {
       setErrorMsg(e.response?.data?.msg || 'Upload failed');
+      setUploadStatus('error');
     }
     setUploading(false);
   };
@@ -96,9 +108,18 @@ export default function UploadScreen({ navigation, token }) {
               style={styles.input}
               left={<TextInput.Icon icon="format-title" />}
             />
-            {errorMsg ? (
+
+            {/* Upload status and error messages */}
+            {uploadStatus === 'uploading' && (
+              <Text style={{ color: theme.colors.primary, marginTop: 10 }}>Uploading...</Text>
+            )}
+            {uploadStatus === 'success' && (
+              <Text style={{ color: 'green', marginTop: 10 }}>Upload successful!</Text>
+            )}
+            {uploadStatus === 'error' && errorMsg && (
               <Text style={styles.error}>{errorMsg}</Text>
-            ) : null}
+            )}
+
             <Button
               mode="contained"
               icon="cloud-upload"
@@ -111,7 +132,9 @@ export default function UploadScreen({ navigation, token }) {
               Upload
             </Button>
             {uploading && <ActivityIndicator animating={true} style={{ marginTop: 10 }} />}
-            {thumb && (
+
+            {/* Show thumbnail ONLY if upload was successful */}
+            {uploadStatus === 'success' && thumb && (
               <View style={{ alignItems: 'center', marginTop: 16 }}>
                 <Text style={{ marginBottom: 6 }}>Uploaded Thumbnail:</Text>
                 <Card.Cover source={{ uri: thumb }} style={styles.thumb} />
