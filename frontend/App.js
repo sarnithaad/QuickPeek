@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import RegisterScreen from './screens/RegisterScreen';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import UploadScreen from './screens/UploadScreen';
@@ -12,17 +13,34 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName={token == null ? "Register" : "Home"}>
         {token == null ? (
-          <Stack.Screen name="Login">
-            {props => <LoginScreen {...props} setToken={setToken} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen
+              name="Register"
+              options={{ title: "Register" }}
+            >
+              {props => <RegisterScreen {...props} setToken={setToken} />}
+            </Stack.Screen>
+            <Stack.Screen
+              name="Login"
+              options={{ title: "Login" }}
+            >
+              {props => <LoginScreen {...props} setToken={setToken} />}
+            </Stack.Screen>
+          </>
         ) : (
           <>
-            <Stack.Screen name="Home">
+            <Stack.Screen
+              name="Home"
+              options={{ title: "Home" }}
+            >
               {props => <HomeScreen {...props} token={token} setToken={setToken} />}
             </Stack.Screen>
-            <Stack.Screen name="Upload">
+            <Stack.Screen
+              name="Upload"
+              options={{ title: "Upload Video" }}
+            >
               {props => <UploadScreen {...props} token={token} />}
             </Stack.Screen>
           </>
