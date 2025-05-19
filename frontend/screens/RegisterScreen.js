@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { Text, TextInput, Button, HelperText, useTheme, Title } from 'react-native-paper';
+import { TextInput, Button, Text, Title, HelperText, useTheme } from 'react-native-paper';
 import axios from 'axios';
 
-const API_URL = 'https://quickpeek.onrender.com/api/auth';
+const API_URL = 'https://quickpeek.onrender.com/api/auth'; // Replace with your backend API URL
 
 export default function RegisterScreen({ navigation, setToken }) {
   const [email, setEmail] = useState('');
@@ -12,36 +12,54 @@ export default function RegisterScreen({ navigation, setToken }) {
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
 
+  const validateEmail = (email) => {
+    // Simple email validation regex
+    return /\S+@\S+\.\S+/.test(email);
+  };
+
   const handleRegister = async () => {
     setErrorMsg('');
 
-    // Basic validation
     if (!email.trim() || !password) {
       setErrorMsg('Please enter email and password.');
       return;
     }
+
+    if (!validateEmail(email.trim())) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMsg('Password should be at least 6 characters long.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await axios.post(API_URL + '/register', {
+      const response = await axios.post(`${API_URL}/register`, {
         email: email.trim(),
-        password
+        password,
       });
-      setToken(res.data.token);
-    } catch (e) {
-      setErrorMsg(e.response?.data?.msg || 'Registration failed');
+      // Assuming your backend returns a token on successful registration
+      setToken(response.data.token);
+    } catch (error) {
+      setErrorMsg(error.response?.data?.msg || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
         <Title style={styles.title}>Create Account</Title>
         <Text style={styles.subtitle}>Register for QuickPeek</Text>
+
         <TextInput
           label="Email"
           value={email}
@@ -53,6 +71,7 @@ export default function RegisterScreen({ navigation, setToken }) {
           style={styles.input}
           left={<TextInput.Icon icon="email" />}
         />
+
         <TextInput
           label="Password"
           value={password}
@@ -62,20 +81,26 @@ export default function RegisterScreen({ navigation, setToken }) {
           style={styles.input}
           left={<TextInput.Icon icon="lock" />}
         />
+
         <HelperText type="error" visible={!!errorMsg}>
           {errorMsg}
         </HelperText>
+
         <Button
           mode="contained"
           onPress={handleRegister}
           loading={loading}
           disabled={loading}
           style={styles.button}
-          contentStyle={{ paddingVertical: 6 }}
+          contentStyle={{ paddingVertical: 8 }}
         >
           Register
         </Button>
-        <Text style={styles.toggle} onPress={() => navigation.navigate('Login')}>
+
+        <Text
+          style={styles.toggleText}
+          onPress={() => navigation.navigate('Login')}
+        >
           Already have an account? <Text style={{ color: theme.colors.primary }}>Login</Text>
         </Text>
       </View>
@@ -84,10 +109,38 @@ export default function RegisterScreen({ navigation, setToken }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex:1, justifyContent:'center', alignItems:'center', padding:24 },
-  title: { fontSize:28, fontWeight:'bold', marginBottom:8, color: '#1e88e5' },
-  subtitle: { fontSize:16, color:'#666', marginBottom:24 },
-  input: { width:'100%', maxWidth:400, marginVertical:6 },
-  button: { width:'100%', maxWidth:400, marginTop:16, borderRadius:8 },
-  toggle: { marginTop:24, fontSize:15, color:'#444', textAlign:'center' }
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#1e88e5',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 24,
+  },
+  input: {
+    width: '100%',
+    maxWidth: 400,
+    marginVertical: 6,
+  },
+  button: {
+    width: '100%',
+    maxWidth: 400,
+    marginTop: 16,
+    borderRadius: 8,
+  },
+  toggleText: {
+    marginTop: 24,
+    fontSize: 15,
+    color: '#444',
+    textAlign: 'center',
+  },
 });
