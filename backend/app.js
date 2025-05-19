@@ -48,7 +48,8 @@ app.use((req, res, next) => {
 
 // ==== Global error handler ====
 app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
+  console.error('Global error handler message:', err.message);
+  console.error('Global error handler stack:', err.stack);
   res.status(err.status || 500).json({ msg: err.message || 'Internal server error' });
 });
 
@@ -68,17 +69,22 @@ async function startServer() {
       console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`)
     );
   } catch (err) {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB connection error message:', err.message);
+    console.error('MongoDB connection error stack:', err.stack);
     process.exit(1);
   }
 }
 
 // ==== Process error handling ====
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+  console.error('Uncaught Exception message:', err.message);
+  console.error('Uncaught Exception stack:', err.stack);
 });
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection:', reason);
+  console.error('Unhandled Rejection reason:', reason);
+  if (reason instanceof Error) {
+    console.error('Unhandled Rejection stack:', reason.stack);
+  }
 });
 
 // ==== Start ====
