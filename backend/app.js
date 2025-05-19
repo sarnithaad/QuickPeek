@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const helmet = require('helmet');
 
 const authRoutes = require('./routes/auth');
 const videoRoutes = require('./routes/video');
@@ -11,12 +12,13 @@ const videoRoutes = require('./routes/video');
 const app = express();
 
 // ==== Use env variables for uploads/thumbnails directories ====
-const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
-const THUMBNAILS_DIR = process.env.THUMBNAILS_DIR || path.join(__dirname, 'thumbnails');
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
-if (!fs.existsSync(THUMBNAILS_DIR)) fs.mkdirSync(THUMBNAILS_DIR);
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.resolve(__dirname, 'uploads');
+const THUMBNAILS_DIR = process.env.THUMBNAILS_DIR || path.resolve(__dirname, 'thumbnails');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (!fs.existsSync(THUMBNAILS_DIR)) fs.mkdirSync(THUMBNAILS_DIR, { recursive: true });
 
 // ==== Middleware ====
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -46,22 +48,34 @@ app.use((req, res, next) => {
   res.status(404).json({ msg: 'Route not found' });
 });
 
-// ==== MongoDB connection ====
+// ==== Global error handler ====
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  res.status(err.status || 500).json({ msg: err.message || 'Internal server error' });
+});
+
+// ==== MongoDB connection and server start ====
 const mongoUri = process.env.MONGO_URI;
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(() => {
-    const dbName = mongoose.connection.name;
-    console.log(`MongoDB Connected to database: ${dbName}`);
-  })
-  .catch(err => {
+const PORT = process.env.PORT || 5000;
+
+async function startServer() {
+  try {
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log(`MongoDB Connected to database: ${mongoose.connection.name}`);
+
+    app.listen(PORT, () =>
+      console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`)
+    );
+  } catch (err) {
     console.error('MongoDB connection error:', err);
     process.exit(1);
-  });
+  }
+}
 
-// ==== Error handling ====
+// ==== Process error handling ====
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
@@ -69,6 +83,5 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection:', reason);
 });
 
-// ==== Start server ====
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ==== Start ====
+startServer();
