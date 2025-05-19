@@ -1,0 +1,8 @@
+{
+  "expo": {
+    // ...other Expo config (name, slug, etc.)
+    "plugins": [
+      "expo-video"
+    ]
+  }
+}
