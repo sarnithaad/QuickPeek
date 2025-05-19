@@ -4,7 +4,11 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
+console.log('uploadVideo:', uploadVideo);
+console.log('getVideos:', getVideos);
+console.log('likeVideo:', likeVideo);
 
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 function ensureUploadsDir(req, res, next) {
