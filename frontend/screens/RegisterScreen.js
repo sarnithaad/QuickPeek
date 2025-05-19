@@ -13,10 +13,20 @@ export default function RegisterScreen({ navigation, setToken }) {
   const theme = useTheme();
 
   const handleRegister = async () => {
-    setLoading(true);
     setErrorMsg('');
+
+    // Basic validation
+    if (!email.trim() || !password) {
+      setErrorMsg('Please enter email and password.');
+      return;
+    }
+    setLoading(true);
+
     try {
-      const res = await axios.post(API_URL + '/register', { email, password });
+      const res = await axios.post(API_URL + '/register', {
+        email: email.trim(),
+        password
+      });
       setToken(res.data.token);
     } catch (e) {
       setErrorMsg(e.response?.data?.msg || 'Registration failed');
@@ -39,6 +49,7 @@ export default function RegisterScreen({ navigation, setToken }) {
           mode="outlined"
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
           style={styles.input}
           left={<TextInput.Icon icon="email" />}
         />
@@ -58,6 +69,7 @@ export default function RegisterScreen({ navigation, setToken }) {
           mode="contained"
           onPress={handleRegister}
           loading={loading}
+          disabled={loading}
           style={styles.button}
           contentStyle={{ paddingVertical: 6 }}
         >
