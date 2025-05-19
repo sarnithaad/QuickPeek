@@ -7,8 +7,8 @@ const fs = require('fs');
 
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
 
-// Ensure uploads directory exists at startup
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+// Use environment variable for uploads directory if set
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
 
 // Multer storage configuration
