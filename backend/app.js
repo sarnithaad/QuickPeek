@@ -10,25 +10,23 @@ const videoRoutes = require('./routes/video');
 
 const app = express();
 
-// ==== Ensure uploads and thumbnails directories exist ====
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const THUMBNAILS_DIR = path.join(__dirname, 'thumbnails');
+// ==== Use env variables for uploads/thumbnails directories ====
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
+const THUMBNAILS_DIR = process.env.THUMBNAILS_DIR || path.join(__dirname, 'thumbnails');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
 if (!fs.existsSync(THUMBNAILS_DIR)) fs.mkdirSync(THUMBNAILS_DIR);
 
 // ==== Middleware ====
-app.use(cors()); // Enable CORS for all origins
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ==== Static file serving for uploads and thumbnails ====
+// ==== Static file serving ====
 app.use('/uploads', express.static(UPLOADS_DIR, {
   setHeaders: (res, filePath) => {
-    // Set explicit content type for mp4 files (optional, but good practice)
     if (filePath.endsWith('.mp4')) {
       res.setHeader('Content-Type', 'video/mp4');
     }
-    // Allow range requests for video seeking
     res.setHeader('Accept-Ranges', 'bytes');
   }
 }));
@@ -43,7 +41,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 
-// ==== 404 handler for unknown routes ====
+// ==== 404 handler ====
 app.use((req, res, next) => {
   res.status(404).json({ msg: 'Route not found' });
 });
@@ -63,7 +61,7 @@ mongoose.connect(mongoUri, {
     process.exit(1);
   });
 
-// ==== Error handling for uncaught exceptions and unhandled promise rejections ====
+// ==== Error handling ====
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
