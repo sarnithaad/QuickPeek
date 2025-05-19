@@ -3,7 +3,7 @@ import { View, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Card, useTheme } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { Video } from 'expo-video'; // NEW: use expo-video
+import { Video } from 'expo-video'; // Correct import for expo-video
 
 const API_BASE = 'https://quickpeek.onrender.com';
 const API_URL = `${API_BASE}/api/videos/upload`;
@@ -33,7 +33,7 @@ export default function UploadScreen({ navigation, token }) {
     setErrorMsg('');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ImagePicker.MediaType.VIDEO], // UPDATED: new API
+        mediaTypes: [ImagePicker.MediaType.VIDEO], // Updated API for Expo SDK 53+
         allowsEditing: false,
         quality: 0.5,
       });
