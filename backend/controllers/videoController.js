@@ -12,12 +12,15 @@ exports.uploadVideo = async (req, res) => {
     const { title } = req.body;
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
     if (!title || typeof title !== 'string' || !title.trim()) {
+      // Remove the uploaded file if title is missing
       fs.unlink(req.file.path, () => {});
       return res.status(400).json({ msg: 'Title is required' });
     }
 
-    // Generate thumbnail
+    // The uploaded video is already saved in backend/uploads by Multer!
     const videoPath = req.file.path;
+
+    // Generate thumbnail
     const thumbnailFilename = `${Date.now()}_thumb.jpg`;
     const thumbnailDir = path.join(__dirname, '..', 'thumbnails');
     const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
@@ -37,13 +40,15 @@ exports.uploadVideo = async (req, res) => {
           });
       });
     } catch (ffmpegErr) {
+      // If thumbnail generation fails, clean up the uploaded video
       fs.unlink(videoPath, () => {});
       return res.status(500).json({ msg: 'Failed to generate thumbnail. Is ffmpeg installed?' });
     }
 
+    // Save video metadata to MongoDB
     const video = new Video({
       title: title.trim(),
-      filename: req.file.filename,
+      filename: req.file.filename, // This is the file in backend/uploads
       thumbnail: thumbnailFilename,
       uploadedBy: req.user.id
     });
