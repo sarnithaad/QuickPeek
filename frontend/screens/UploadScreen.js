@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, Platform, KeyboardAvoidingView, Alert } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Card, useTheme } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
@@ -37,9 +37,16 @@ export default function UploadScreen({ navigation, token }) {
         allowsEditing: false,
         quality: 0.5,
       });
-      if (!result.canceled) setVideo(result.assets[0]);
+      // Debug: Show the picker result in an alert
+      Alert.alert('Picker Result', JSON.stringify(result, null, 2));
+
+      if (!result.canceled) {
+        setVideo(result.assets[0]);
+      } else {
+        setErrorMsg('No video selected');
+      }
     } catch (e) {
-      setErrorMsg('Could not pick video');
+      setErrorMsg('Could not pick video: ' + e.message);
     }
   };
 
