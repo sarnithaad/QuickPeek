@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, FlatList, StyleSheet, Alert, Animated, Dimensions } from 'react-native';
+import { View, FlatList, StyleSheet, Alert, Animated, Dimensions, Image } from 'react-native';
 import { Card, Title, Paragraph, Button, Avatar, ActivityIndicator, IconButton } from 'react-native-paper';
 import axios from 'axios';
 import { Video } from 'expo-av';
 
 const API_URL = 'https://quickpeek.onrender.com/api/videos';
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const DEFAULT_THUMB = 'https://cdn-icons-png.flaticon.com/512/1160/1160358.png'; // fallback thumbnail
 
 export default function HomeScreen({ navigation, token, setToken }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const likeAnims = useRef({}).current;
 
   const fetchVideos = async () => {
@@ -28,8 +30,8 @@ export default function HomeScreen({ navigation, token, setToken }) {
   // Initialize animation values for each video
   useEffect(() => {
     videos.forEach(video => {
-      if (!likeAnims[video.id]) {
-        likeAnims[video.id] = new Animated.Value(1);
+      if (!likeAnims[video._id]) {
+        likeAnims[video._id] = new Animated.Value(1);
       }
     });
   }, [videos]);
@@ -53,6 +55,12 @@ export default function HomeScreen({ navigation, token, setToken }) {
     } catch (e) {
       Alert.alert('Error', 'Failed to like video');
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchVideos();
+    setRefreshing(false);
   };
 
   if (loading) return (
@@ -84,8 +92,10 @@ export default function HomeScreen({ navigation, token, setToken }) {
       </View>
       <FlatList
         data={videos}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id}
         contentContainerStyle={{ paddingBottom: 16 }}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item, index }) => (
           <Card style={styles.card} elevation={4}>
             <Video
@@ -94,23 +104,34 @@ export default function HomeScreen({ navigation, token, setToken }) {
               useNativeControls
               resizeMode="cover"
               isLooping
+              onError={() => Alert.alert('Error', 'Failed to load video')}
             />
             <Card.Content style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-              <Avatar.Image
-                source={{ uri: `https://quickpeek.onrender.com${item.thumbnail}` }}
-                size={48}
-                style={{ marginRight: 12 }}
-              />
+              {item.thumbnail ? (
+                <Avatar.Image
+                  source={{ uri: `https://quickpeek.onrender.com${item.thumbnail}` }}
+                  size={48}
+                  style={{ marginRight: 12 }}
+                />
+              ) : (
+                <Avatar.Image
+                  source={{ uri: DEFAULT_THUMB }}
+                  size={48}
+                  style={{ marginRight: 12 }}
+                />
+              )}
               <View style={{ flex: 1 }}>
                 <Title style={styles.title}>{item.title}</Title>
-                <Paragraph style={styles.subtitle}>Uploaded by User</Paragraph>
+                <Paragraph style={styles.subtitle}>
+                  {item.uploader ? `Uploaded by ${item.uploader}` : 'Uploaded by User'}
+                </Paragraph>
               </View>
-              <Animated.View style={{ transform: [{ scale: likeAnims[item.id] || 1 }] }}>
+              <Animated.View style={{ transform: [{ scale: likeAnims[item._id] || 1 }] }}>
                 <IconButton
                   icon="heart"
                   iconColor="#e53935"
                   size={28}
-                  onPress={() => likeVideo(item.id, index)}
+                  onPress={() => likeVideo(item._id, index)}
                 />
                 <Paragraph style={styles.likes}>{item.likes}</Paragraph>
               </Animated.View>
