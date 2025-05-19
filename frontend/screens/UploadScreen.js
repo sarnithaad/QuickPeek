@@ -33,7 +33,7 @@ export default function UploadScreen({ navigation, token }) {
     setErrorMsg('');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ImagePicker.MediaType.VIDEO], // Updated API for Expo SDK 53+
+        mediaTypes: ImagePicker.MediaType.VIDEO, // Correct usage for SDK 53+
         allowsEditing: false,
         quality: 0.5,
       });
