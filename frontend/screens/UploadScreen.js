@@ -35,7 +35,7 @@ export default function UploadScreen({ navigation, token }) {
     setErrorMsg('');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.VIDEO,
+        mediaTypes: Image.Picker.MediaType.VIDEO,
         allowsEditing: false,
         quality: 0.5,
       });
