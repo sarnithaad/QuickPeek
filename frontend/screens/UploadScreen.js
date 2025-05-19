@@ -3,7 +3,7 @@ import { View, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Card, useTheme } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { Video } from 'expo-av';
+import { Video } from 'expo-video'; // NEW: use expo-video
 
 const API_BASE = 'https://quickpeek.onrender.com';
 const API_URL = `${API_BASE}/api/videos/upload`;
@@ -28,13 +28,12 @@ export default function UploadScreen({ navigation, token }) {
   }, []);
 
   const pickVideo = async () => {
-    // Clear previous thumbnail and status when picking a new video
     setThumb(null);
     setUploadStatus('');
     setErrorMsg('');
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Videos, // Correct usage
+        mediaTypes: [ImagePicker.MediaType.VIDEO], // UPDATED: new API
         allowsEditing: false,
         quality: 0.5,
       });
@@ -53,7 +52,7 @@ export default function UploadScreen({ navigation, token }) {
     setUploading(true);
     setErrorMsg('');
     setUploadStatus('uploading');
-    setThumb(null); // Hide thumbnail until upload is done
+    setThumb(null);
 
     const formData = new FormData();
     formData.append('title', title);
@@ -66,7 +65,6 @@ export default function UploadScreen({ navigation, token }) {
       const res = await axios.post(API_URL, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          // Let axios set Content-Type automatically
         }
       });
       setThumb(`${API_BASE}${res.data.video.thumbnail}`);
@@ -119,7 +117,6 @@ export default function UploadScreen({ navigation, token }) {
               left={<TextInput.Icon icon="format-title" />}
             />
 
-            {/* Upload status and error messages */}
             {uploadStatus === 'uploading' && (
               <Text style={{ color: theme.colors.primary, marginTop: 10 }}>Uploading...</Text>
             )}
@@ -143,7 +140,6 @@ export default function UploadScreen({ navigation, token }) {
             </Button>
             {uploading && <ActivityIndicator animating={true} style={{ marginTop: 10 }} />}
 
-            {/* Show thumbnail ONLY if upload was successful */}
             {uploadStatus === 'success' && thumb && (
               <View style={{ alignItems: 'center', marginTop: 16 }}>
                 <Text style={{ marginBottom: 6 }}>Uploaded Thumbnail:</Text>
