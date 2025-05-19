@@ -40,7 +40,7 @@ router.post(
   '/upload',
   auth,
   ensureUploadsDir,
-  upload.single('video'), // FIELD NAME MUST MATCH FRONTEND
+  upload.single('videos'), // FIELD NAME MUST MATCH FRONTEND
   multerErrorHandler,
   (req, res, next) => {
     // Debug log
