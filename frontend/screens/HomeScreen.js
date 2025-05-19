@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, FlatList, StyleSheet, Alert, Animated, Dimensions, Image } from 'react-native';
+import { View, FlatList, StyleSheet, Alert, Animated, Dimensions } from 'react-native';
 import { Card, Title, Paragraph, Button, Avatar, ActivityIndicator, IconButton } from 'react-native-paper';
 import axios from 'axios';
-import { Video } from 'expo-av';
+import { Video } from 'expo-video'; // Use expo-video, not expo-av
 
 const API_URL = 'https://quickpeek.onrender.com/api/videos';
 const SCREEN_WIDTH = Dimensions.get('window').width;
