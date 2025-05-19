@@ -8,7 +8,6 @@ exports.uploadVideo = async (req, res) => {
     const { title } = req.body;
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
     if (!title || typeof title !== 'string' || !title.trim()) {
-      // Remove uploaded file if title is missing
       fs.unlink(req.file.path, () => {});
       return res.status(400).json({ msg: 'Title is required' });
     }
@@ -19,7 +18,6 @@ exports.uploadVideo = async (req, res) => {
     const thumbnailDir = path.join(__dirname, '..', 'thumbnails');
     const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
-    // Ensure thumbnails directory exists
     if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir);
 
     try {
@@ -35,7 +33,6 @@ exports.uploadVideo = async (req, res) => {
           });
       });
     } catch (ffmpegErr) {
-      // Remove uploaded file if thumbnail fails
       fs.unlink(videoPath, () => {});
       return res.status(500).json({ msg: 'Failed to generate thumbnail. Is ffmpeg installed?' });
     }
@@ -55,11 +52,11 @@ exports.uploadVideo = async (req, res) => {
         title: video.title,
         url: `/uploads/${video.filename}`,
         thumbnail: `/thumbnails/${video.thumbnail}`,
-        likes: video.likes
+        likes: video.likes,
+        uploadedBy: video.uploadedBy ? video.uploadedBy.toString() : null
       }
     });
   } catch (err) {
-    // Only show full error in development
     const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       msg: 'Upload error',
@@ -76,7 +73,8 @@ exports.getVideos = async (req, res) => {
       title: v.title,
       url: `/uploads/${v.filename}`,
       thumbnail: `/thumbnails/${v.thumbnail}`,
-      likes: v.likes
+      likes: v.likes,
+      uploadedBy: v.uploadedBy ? v.uploadedBy.toString() : null
     })));
   } catch (err) {
     res.status(500).json({ msg: 'Error fetching videos' });
