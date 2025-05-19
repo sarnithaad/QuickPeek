@@ -13,10 +13,20 @@ export default function LoginScreen({ navigation, setToken }) {
   const theme = useTheme();
 
   const handleLogin = async () => {
-    setLoading(true);
     setErrorMsg('');
+
+    // Basic validation
+    if (!email.trim() || !password) {
+      setErrorMsg('Please enter email and password.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post(API_URL + '/login', { email, password });
+      const res = await axios.post(API_URL + '/login', {
+        email: email.trim().toLowerCase(),
+        password
+      });
       setToken(res.data.token);
     } catch (e) {
       setErrorMsg(e.response?.data?.msg || 'Login failed');
@@ -39,6 +49,7 @@ export default function LoginScreen({ navigation, setToken }) {
           mode="outlined"
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
           style={styles.input}
           left={<TextInput.Icon icon="email" />}
         />
@@ -58,6 +69,7 @@ export default function LoginScreen({ navigation, setToken }) {
           mode="contained"
           onPress={handleLogin}
           loading={loading}
+          disabled={loading}
           style={styles.button}
           contentStyle={{ paddingVertical: 6 }}
         >
