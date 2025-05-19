@@ -3,6 +3,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs');
 
+// UPLOAD VIDEO
 exports.uploadVideo = async (req, res) => {
   try {
     // Debug: Log the file received by Multer
@@ -66,5 +67,35 @@ exports.uploadVideo = async (req, res) => {
       msg: 'Upload error',
       ...(isDev && { error: err.message })
     });
+  }
+};
+
+// GET VIDEOS
+exports.getVideos = async (req, res) => {
+  try {
+    const videos = await Video.find().sort({ createdAt: -1 });
+    res.json(videos.map(v => ({
+      id: v._id,
+      title: v.title,
+      url: `/uploads/${v.filename}`,
+      thumbnail: `/thumbnails/${v.thumbnail}`,
+      likes: v.likes,
+      uploadedBy: v.uploadedBy ? v.uploadedBy.toString() : null
+    })));
+  } catch (err) {
+    res.status(500).json({ msg: 'Error fetching videos' });
+  }
+};
+
+// LIKE VIDEO
+exports.likeVideo = async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.videoId);
+    if (!video) return res.status(404).json({ msg: 'Video not found' });
+    video.likes += 1;
+    await video.save();
+    res.json({ likes: video.likes });
+  } catch (err) {
+    res.status(500).json({ msg: 'Error liking video' });
   }
 };
