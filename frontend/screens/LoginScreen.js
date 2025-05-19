@@ -15,22 +15,23 @@ export default function LoginScreen({ navigation, setToken }) {
   const handleLogin = async () => {
     setErrorMsg('');
 
-    // Basic validation
     if (!email.trim() || !password) {
       setErrorMsg('Please enter email and password.');
       return;
     }
 
     setLoading(true);
+
     try {
       const res = await axios.post(API_URL + '/login', {
-        email: email.trim().toLowerCase(),
+        email: email.trim(),
         password
       });
       setToken(res.data.token);
     } catch (e) {
       setErrorMsg(e.response?.data?.msg || 'Login failed');
     }
+
     setLoading(false);
   };
 
@@ -40,8 +41,8 @@ export default function LoginScreen({ navigation, setToken }) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.container}>
-        <Title style={styles.title}>Welcome Back 👋</Title>
-        <Text style={styles.subtitle}>Login to QuickPeek</Text>
+        <Title style={styles.title}>Welcome Back</Title>
+        <Text style={styles.subtitle}>Log in to QuickPeek</Text>
         <TextInput
           label="Email"
           value={email}
