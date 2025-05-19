@@ -25,6 +25,7 @@ exports.uploadVideo = async (req, res) => {
     const thumbnailDir = path.join(__dirname, '..', 'thumbnails');
     const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
+    // Ensure the thumbnails directory exists
     if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir);
 
     try {
