@@ -3,7 +3,7 @@ import { View, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Card, useTheme } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { VideoView } from 'expo-video'; // Updated import
+import { Video } from 'expo-av'; // Correct import
 
 const API_BASE = 'https://quickpeek.onrender.com';
 const API_URL = `${API_BASE}/api/videos/upload`;
@@ -91,7 +91,7 @@ export default function UploadScreen({ navigation, token }) {
             {video && (
               <View style={{ alignItems: 'center', marginVertical: 12 }}>
                 <Text style={styles.selectedText}>Selected: {video.uri.split('/').pop()}</Text>
-                <VideoView
+                <Video
                   source={{ uri: video.uri }}
                   style={{ width: 220, height: 180, borderRadius: 12, marginVertical: 10 }}
                   useNativeControls
