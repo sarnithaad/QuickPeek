@@ -22,14 +22,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ==== Static file serving ====
-app.use('/uploads', express.static(UPLOADS_DIR, /*{
+app.use('/uploads', express.static(UPLOADS_DIR, {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.mp4')) {
       res.setHeader('Content-Type', 'video/mp4');
     }
     res.setHeader('Accept-Ranges', 'bytes');
   }
-}*/));
+}));
 app.use('/thumbnails', express.static(THUMBNAILS_DIR));
 
 // ==== Root route for health check ====
