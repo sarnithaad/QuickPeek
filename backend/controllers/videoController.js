@@ -5,6 +5,9 @@ const fs = require('fs');
 
 exports.uploadVideo = async (req, res) => {
   try {
+    // Debug: Log the file received by Multer
+    console.log('Controller req.file:', req.file);
+
     const { title } = req.body;
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
     if (!title || typeof title !== 'string' || !title.trim()) {
@@ -58,37 +61,10 @@ exports.uploadVideo = async (req, res) => {
     });
   } catch (err) {
     const isDev = process.env.NODE_ENV !== 'production';
+    console.error('Upload error:', err);
     res.status(500).json({
       msg: 'Upload error',
       ...(isDev && { error: err.message })
     });
-  }
-};
-
-exports.getVideos = async (req, res) => {
-  try {
-    const videos = await Video.find().sort({ createdAt: -1 });
-    res.json(videos.map(v => ({
-      id: v._id,
-      title: v.title,
-      url: `/uploads/${v.filename}`,
-      thumbnail: `/thumbnails/${v.thumbnail}`,
-      likes: v.likes,
-      uploadedBy: v.uploadedBy ? v.uploadedBy.toString() : null
-    })));
-  } catch (err) {
-    res.status(500).json({ msg: 'Error fetching videos' });
-  }
-};
-
-exports.likeVideo = async (req, res) => {
-  try {
-    const video = await Video.findById(req.params.videoId);
-    if (!video) return res.status(404).json({ msg: 'Video not found' });
-    video.likes += 1;
-    await video.save();
-    res.json({ likes: video.likes });
-  } catch (err) {
-    res.status(500).json({ msg: 'Error liking video' });
   }
 };
