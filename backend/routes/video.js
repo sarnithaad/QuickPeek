@@ -4,25 +4,36 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
 
 // Define base uploads directory and videos subfolder
-const uploadDir = path.join(__dirname, '../uploads/videos');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const UPLOADS_BASE_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
+const VIDEO_DIR = path.join(UPLOADS_BASE_DIR, 'videos');
 
-// Setup multer storage
+// Ensure videos upload directory exists
+if (!fs.existsSync(VIDEO_DIR)) fs.mkdirSync(VIDEO_DIR, { recursive: true });
+
+// Configure multer storage for video files
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
+  destination: (req, file, cb) => {
+    cb(null, VIDEO_DIR);
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}_${file.originalname}`);
   }
 });
 
-const upload = multer({ storage });
+// File filter to allow only mp4 files
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (ext !== '.mp4') {
+    return cb(new Error('Only mp4 is allowed'), false);
+  }
+  cb(null, true);
+};
+
+const upload = multer({ storage, fileFilter });
 
 // Middleware to handle multer errors gracefully
 function multerErrorHandler(err, req, res, next) {
@@ -34,21 +45,23 @@ function multerErrorHandler(err, req, res, next) {
 
 // Routes
 
-// POST /api/videos/upload - Upload a video (authenticated)
-router.post('/upload', auth, upload.single('video'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
+// POST /upload - Upload a video (authenticated)
+router.post(
+  '/upload',
+  auth,
+  upload.single('video'),
+  multerErrorHandler,
+  (req, res, next) => {
+    console.log('Multer req.file:', req.file);
+    next();
+  },
+  uploadVideo
+);
 
-  const filePath = `/uploads/videos/${req.file.filename}`;
+// GET / - Get all videos
+router.get('/', getVideos);
 
-  // TODO: Save filePath and metadata to DB here...
-
-  res.status(201).json({
-    message: 'Upload successful',
-    filePath,
-    filename: req.file.filename,
-  });
-});
+// POST /like/:videoId - Like a video (authenticated)
+router.post('/like/:videoId', auth, likeVideo);
 
 module.exports = router;
