@@ -4,15 +4,15 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const upload = require('./upload');
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
 
 // Define base uploads directory and videos subfolder
-const uploadDir = path.join(__dirname, '../uploads');
+const uploadDir = path.join(__dirname, '../uploads/videos');
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// Setup multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -24,7 +24,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-module.exports = upload;
 // Middleware to handle multer errors gracefully
 function multerErrorHandler(err, req, res, next) {
   if (err instanceof multer.MulterError || err.message === 'Only mp4 is allowed') {
@@ -35,15 +34,15 @@ function multerErrorHandler(err, req, res, next) {
 
 // Routes
 
-// POST /upload - Upload a video (authenticated)
-router.post('/api/videos/upload', upload.single('video'), (req, res) => {
+// POST /api/videos/upload - Upload a video (authenticated)
+router.post('/upload', auth, upload.single('video'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
-  const filePath = `/uploads/${req.file.filename}`;
+  const filePath = `/uploads/videos/${req.file.filename}`;
 
-  // Save filePath and metadata to DB here...
+  // TODO: Save filePath and metadata to DB here...
 
   res.status(201).json({
     message: 'Upload successful',
