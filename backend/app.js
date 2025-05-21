@@ -10,8 +10,8 @@ const videoRoutes = require('./routes/video');
 
 const app = express();
 
-// Use UPLOADS_DIR from .env or fallback to 'uploads'
-const UPLOADS_BASE_DIR = path.resolve(__dirname, process.env.UPLOADS_DIR || 'uploads');
+// Define correct directories for video and thumbnail storage
+const UPLOADS_BASE_DIR = path.resolve(__dirname, 'uploads');
 const UPLOADS_VIDEO_DIR = path.join(UPLOADS_BASE_DIR, 'videos');
 const UPLOADS_THUMBNAIL_DIR = path.join(UPLOADS_BASE_DIR, 'thumbnails');
 
@@ -19,12 +19,11 @@ const UPLOADS_THUMBNAIL_DIR = path.join(UPLOADS_BASE_DIR, 'thumbnails');
 if (!fs.existsSync(UPLOADS_VIDEO_DIR)) fs.mkdirSync(UPLOADS_VIDEO_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_THUMBNAIL_DIR)) fs.mkdirSync(UPLOADS_THUMBNAIL_DIR, { recursive: true });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve videos and thumbnails statically
+// Serve videos and thumbnails from the /uploads route
 app.use(
   '/uploads',
   express.static(UPLOADS_BASE_DIR, {
@@ -37,28 +36,27 @@ app.use(
   })
 );
 
-// API Health Check
 app.get('/', (req, res) => {
   res.send('🚀 QuickPeek API is running!');
 });
 
-// API Routes
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 
-// 404 Handler
+// 404 handler
 app.use((req, res, next) => {
   res.status(404).json({ msg: 'Route not found' });
 });
 
-// Global Error Handler
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('Global error handler message:', err.message);
   console.error('Global error handler stack:', err.stack);
   res.status(err.status || 500).json({ msg: err.message || 'Internal server error' });
 });
 
-// MongoDB Setup
+// MongoDB setup
 const mongoUri = process.env.MONGO_URI;
 const PORT = process.env.PORT || 5000;
 
@@ -68,10 +66,10 @@ async function startServer() {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log(MongoDB Connected to database: ${mongoose.connection.name});
+    console.log(`MongoDB Connected to database: ${mongoose.connection.name}`);
 
     app.listen(PORT, () =>
-      console.log(Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode)
+      console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`)
     );
   } catch (err) {
     console.error('MongoDB connection error message:', err.message);
@@ -80,12 +78,11 @@ async function startServer() {
   }
 }
 
-// Handle unexpected errors
+// Uncaught and unhandled error logging
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception message:', err.message);
   console.error('Uncaught Exception stack:', err.stack);
 });
-
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection reason:', reason);
   if (reason instanceof Error) {
