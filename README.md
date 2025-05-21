@@ -6,6 +6,8 @@ QuickPeek is a mobile app where users can register, upload videos, view auto-gen
 - MongoDB for the database
 - FFmpeg for generating video thumbnails
 
+A demo video is attached in this repository which has a length of 2.5 minutes. So, kindly click tthe "View raw file" to download and view the video.
+
 REQUIREMENTS
 
 BACKEND:
