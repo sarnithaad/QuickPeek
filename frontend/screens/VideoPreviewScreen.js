@@ -2,13 +2,10 @@ import React from 'react';
 import { View, StyleSheet, Dimensions, Alert } from 'react-native';
 import { Card, Text, IconButton, useTheme } from 'react-native-paper';
 import { Video } from 'expo-av';
-
 const API_BASE = 'https://quickpeek.onrender.com';
-
 export default function VideoPreviewScreen({ route }) {
   const theme = useTheme();
   const { video } = route.params;
-
   if (!video) {
     return (
       <View style={styles.center}>
@@ -16,7 +13,6 @@ export default function VideoPreviewScreen({ route }) {
       </View>
     );
   }
-
   return (
     <View style={styles.container}>
       <Card style={styles.card} elevation={4}>
@@ -53,7 +49,6 @@ export default function VideoPreviewScreen({ route }) {
     </View>
   );
 }
-
 const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
