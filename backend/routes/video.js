@@ -8,33 +8,23 @@ const fs = require('fs');
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
 
 // Define base uploads directory and videos subfolder
-const UPLOADS_BASE_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
-const VIDEO_DIR = path.join(UPLOADS_BASE_DIR, 'videos');
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
-// Ensure videos upload directory exists
-if (!fs.existsSync(VIDEO_DIR)) fs.mkdirSync(VIDEO_DIR, { recursive: true });
-
-// Configure multer storage for video files
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, VIDEO_DIR);
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
-// File filter to allow only mp4 files
-const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (ext !== '.mp4') {
-    return cb(new Error('Only mp4 is allowed'), false);
-  }
-  cb(null, true);
-};
+const upload = multer({ storage });
 
-const upload = multer({ storage, fileFilter });
-
+module.exports = upload;
 // Middleware to handle multer errors gracefully
 function multerErrorHandler(err, req, res, next) {
   if (err instanceof multer.MulterError || err.message === 'Only mp4 is allowed') {
