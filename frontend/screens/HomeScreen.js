@@ -15,13 +15,11 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [likeLoading, setLikeLoading] = useState({});
-
   useFocusEffect(
     useCallback(() => {
     fetchVideos();
   }, [])
 );
-
   const fetchVideos = async () => {
     setLoading(true);
     try {
@@ -32,7 +30,6 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
     }
     setLoading(false);
   };
-
   const handleLike = async (videoId, index) => {
     setLikeLoading(prev => ({ ...prev, [videoId]: true }));
     try {
@@ -49,7 +46,6 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
     }
     setLikeLoading(prev => ({ ...prev, [videoId]: false }));
   };
-
   const handleLogout = () => {
     setToken(null);
     navigation.reset({
@@ -57,15 +53,12 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
       routes: [{ name: 'Login' }],
     });
   };
-
   const goToUpload = () => {
     navigation.navigate('Upload');
   };
-
   const goToPreview = (video) => {
     navigation.navigate('VideoPreview', { video });
   };
-
   const renderItem = ({ item, index }) => (
     <Card style={styles.card} elevation={3}>
       <TouchableOpacity onPress={() => goToPreview(item)}>
@@ -93,7 +86,6 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
       </Card.Content>
     </Card>
   );
-
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.topRow}>
@@ -114,12 +106,10 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
           Logout
         </Button>
       </View>
-
       <Title style={styles.title}>Welcome to QuickPeek</Title>
       <Text style={styles.subtitle}>
         Browse and like videos uploaded by the community!
       </Text>
-
       {loading ? (
         <ActivityIndicator animating={true} style={{ marginTop: 40 }} />
       ) : videos.length === 0 ? (
@@ -137,7 +127,6 @@ export default function HomeScreen({ navigation, setToken, token, userId }) {
     </View>
   );
 }
-
 const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   topRow: {
