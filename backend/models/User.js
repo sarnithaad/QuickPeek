@@ -5,8 +5,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true, lowercase: true, trim: true },
   password: { type: String, required: true }
 });
-
-// Hash the password before saving the user
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
@@ -17,5 +15,4 @@ userSchema.pre('save', async function (next) {
     next(err);
   }
 });
-
 module.exports = mongoose.model('User', userSchema);
