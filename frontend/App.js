@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider as PaperProvider, MD3LightTheme as PaperTheme } from 'react-native-paper';
-
 import RegisterScreen from './screens/RegisterScreen';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import UploadScreen from './screens/UploadScreen';
 import VideoPreviewScreen from './screens/VideoPreviewScreen';
-
 const Stack = createNativeStackNavigator();
-
 const CombinedTheme = {
   ...DefaultTheme,
   ...PaperTheme,
@@ -23,12 +20,10 @@ const CombinedTheme = {
     text: '#222',
   },
 };
-
 export default function App() {
   const [token, setToken] = useState(null);
   const [userId, setUserId] = useState(null);
   const [videos, setVideos] = useState([]);
-
   return (
     <PaperProvider theme={CombinedTheme}>
       <NavigationContainer theme={CombinedTheme}>
@@ -64,7 +59,6 @@ export default function App() {
                   />
                 )}
               </Stack.Screen>
-
               <Stack.Screen name="Upload" options={{ title: "Upload Video" }}>
                 {props => (
                   <UploadScreen
@@ -77,7 +71,6 @@ export default function App() {
                   />
                 )}
               </Stack.Screen>
-
               <Stack.Screen
                 name="VideoPreview"
                 component={VideoPreviewScreen}
