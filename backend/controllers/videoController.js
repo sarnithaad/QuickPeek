@@ -17,13 +17,13 @@ exports.uploadVideo = async (req, res) => {
 
     const videoPath = req.file.path;
 
-    // Save thumbnail inside uploads/thumbnails/
+    // Save thumbnail inside uploads/videos/ (same folder as video)
     const UPLOADS_BASE_DIR = path.resolve(__dirname, '..', 'uploads');
-    const THUMBNAIL_DIR = path.join(UPLOADS_BASE_DIR, 'thumbnails');
-    if (!fs.existsSync(THUMBNAIL_DIR)) fs.mkdirSync(THUMBNAIL_DIR, { recursive: true });
+    const VIDEO_DIR = path.join(UPLOADS_BASE_DIR, 'videos');
+    if (!fs.existsSync(VIDEO_DIR)) fs.mkdirSync(VIDEO_DIR, { recursive: true });
 
     const thumbnailFilename = `${Date.now()}_thumb.jpg`;
-    const thumbnailPath = path.join(THUMBNAIL_DIR, thumbnailFilename);
+    const thumbnailPath = path.join(VIDEO_DIR, thumbnailFilename);
 
     try {
       await new Promise((resolve, reject) => {
@@ -33,7 +33,7 @@ exports.uploadVideo = async (req, res) => {
           .screenshots({
             count: 1,
             filename: thumbnailFilename,
-            folder: THUMBNAIL_DIR,
+            folder: VIDEO_DIR,
             size: '320x240'
           });
       });
@@ -57,7 +57,7 @@ exports.uploadVideo = async (req, res) => {
         id: video._id,
         title: video.title,
         url: `/uploads/videos/${video.filename}`,
-        thumbnail: `/uploads/thumbnails/${video.thumbnail}`,
+        thumbnail: `/uploads/videos/${video.thumbnail}`,
         likes: video.likes,
         uploadedBy: video.uploadedBy?.toString() || null
       }
@@ -79,7 +79,7 @@ exports.getVideos = async (req, res) => {
       id: v._id,
       title: v.title,
       url: `/uploads/videos/${v.filename}`,
-      thumbnail: `/uploads/thumbnails/${v.thumbnail}`,
+      thumbnail: `/uploads/videos/${v.thumbnail}`,
       likes: v.likes,
       uploadedBy: v.uploadedBy?.toString() || null
     })));
