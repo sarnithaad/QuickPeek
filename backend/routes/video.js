@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
+const upload = require('./upload');
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
 
 // Define base uploads directory and videos subfolder
@@ -36,22 +36,20 @@ function multerErrorHandler(err, req, res, next) {
 // Routes
 
 // POST /upload - Upload a video (authenticated)
-router.post(
-  '/upload',
-  auth,
-  upload.single('video'),
-  multerErrorHandler,
-  (req, res, next) => {
-    console.log('Multer req.file:', req.file);
-    next();
-  },
-  uploadVideo
-);
+router.post('/api/videos/upload', upload.single('video'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
 
-// GET / - Get all videos
-router.get('/', getVideos);
+  const filePath = `/uploads/${req.file.filename}`;
 
-// POST /like/:videoId - Like a video (authenticated)
-router.post('/like/:videoId', auth, likeVideo);
+  // Save filePath and metadata to DB here...
+
+  res.status(201).json({
+    message: 'Upload successful',
+    filePath,
+    filename: req.file.filename,
+  });
+});
 
 module.exports = router;
