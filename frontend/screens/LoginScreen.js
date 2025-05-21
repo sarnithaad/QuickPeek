@@ -11,17 +11,13 @@ export default function LoginScreen({ navigation, setToken }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
-
   const handleLogin = async () => {
     setErrorMsg('');
-
     if (!email.trim() || !password) {
       setErrorMsg('Please enter email and password.');
       return;
     }
-
     setLoading(true);
-
     try {
       const res = await axios.post(API_URL + '/login', {
         email: email.trim(),
@@ -31,10 +27,8 @@ export default function LoginScreen({ navigation, setToken }) {
     } catch (e) {
       setErrorMsg(e.response?.data?.msg || 'Login failed');
     }
-
     setLoading(false);
   };
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
@@ -83,7 +77,6 @@ export default function LoginScreen({ navigation, setToken }) {
     </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex:1, justifyContent:'center', alignItems:'center', padding:24 },
   title: { fontSize:28, fontWeight:'bold', marginBottom:8, color: '#1e88e5' },
