@@ -2,28 +2,24 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, TextInput, ActivityIndicator, Text } from 'react-native-paper';
-import { Video } from 'expo-av';  // add this for video preview
+import { Video } from 'expo-av';  
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-
 const UploadScreen = ({ token, userId, onUploadSuccess }) => {
   const [title, setTitle] = useState('');
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
-
   const pickVideo = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       return Alert.alert("Permission required", "Please allow access to media library.");
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
       allowsEditing: false,
       quality: 1,
     });
-
     if (!result.canceled && result.assets.length > 0) {
       const selected = result.assets[0];
       if (!selected.uri.endsWith('.mp4')) {
@@ -32,11 +28,9 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
       setVideo(selected);
     }
   };
-
   const handleUpload = async () => {
     if (!title.trim()) return Alert.alert("Validation", "Please enter a video title.");
     if (!video) return Alert.alert("Validation", "Please select a video to upload.");
-
     const formData = new FormData();
     formData.append('title', title);
     formData.append('video', {
@@ -44,7 +38,6 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
       name: video.uri.split('/').pop(),
       type: 'video/mp4',
     });
-
     try {
       setLoading(true);
       const res = await axios.post('https://quickpeek.onrender.com/api/videos/upload', formData, {
@@ -53,13 +46,9 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
       Alert.alert("Success", "Video uploaded successfully!");
       setTitle('');
       setVideo(null);
-
-      
-
       navigation.navigate('Home');
     } catch (err) {
       console.error('Upload error:', err.response?.data || err.message);
@@ -68,7 +57,6 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
       setLoading(false);
     }
   };
-
   return (
     <View style={styles.container}>
       <TextInput
@@ -77,12 +65,9 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
         onChangeText={setTitle}
         style={styles.input}
       />
-
       <Button mode="outlined" onPress={pickVideo} style={styles.button}>
         {video ? 'Change Video' : 'Pick Video'}
       </Button>
-
-      {/* Video Preview + filename */}
       {video && (
         <View style={styles.previewContainer}>
           <Video
@@ -95,7 +80,6 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
           <Text style={styles.videoInfo}>Selected: {video.uri.split('/').pop()}</Text>
         </View>
       )}
-
       {loading ? (
         <ActivityIndicator animating={true} size="large" style={styles.loader} />
       ) : (
@@ -111,7 +95,6 @@ const UploadScreen = ({ token, userId, onUploadSuccess }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     padding: 16,
@@ -144,5 +127,4 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-
 export default UploadScreen;
