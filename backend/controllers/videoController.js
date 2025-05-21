@@ -16,11 +16,14 @@ exports.uploadVideo = async (req, res) => {
     }
 
     const videoPath = req.file.path;
-    const thumbnailFilename = `${Date.now()}_thumb.jpg`;
-    const thumbnailDir = path.join(__dirname, '..', 'thumbnails');
-    const thumbnailPath = path.join(thumbnailDir, thumbnailFilename);
 
-    if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir, { recursive: true });
+    // Save thumbnail inside uploads/thumbnails/
+    const UPLOADS_BASE_DIR = path.resolve(__dirname, '..', 'uploads');
+    const THUMBNAIL_DIR = path.join(UPLOADS_BASE_DIR, 'thumbnails');
+    if (!fs.existsSync(THUMBNAIL_DIR)) fs.mkdirSync(THUMBNAIL_DIR, { recursive: true });
+
+    const thumbnailFilename = `${Date.now()}_thumb.jpg`;
+    const thumbnailPath = path.join(THUMBNAIL_DIR, thumbnailFilename);
 
     try {
       await new Promise((resolve, reject) => {
@@ -30,7 +33,7 @@ exports.uploadVideo = async (req, res) => {
           .screenshots({
             count: 1,
             filename: thumbnailFilename,
-            folder: thumbnailDir,
+            folder: THUMBNAIL_DIR,
             size: '320x240'
           });
       });
@@ -53,8 +56,8 @@ exports.uploadVideo = async (req, res) => {
       video: {
         id: video._id,
         title: video.title,
-        url: `/uploads/${video.filename}`,
-        thumbnail: `/thumbnails/${video.thumbnail}`,
+        url: `/uploads/videos/${video.filename}`,
+        thumbnail: `/uploads/thumbnails/${video.thumbnail}`,
         likes: video.likes,
         uploadedBy: video.uploadedBy?.toString() || null
       }
@@ -75,8 +78,8 @@ exports.getVideos = async (req, res) => {
     res.json(videos.map(v => ({
       id: v._id,
       title: v.title,
-      url: `/uploads/${v.filename}`,
-      thumbnail: `/thumbnails/${v.thumbnail}`,
+      url: `/uploads/videos/${v.filename}`,
+      thumbnail: `/uploads/thumbnails/${v.thumbnail}`,
       likes: v.likes,
       uploadedBy: v.uploadedBy?.toString() || null
     })));
@@ -89,6 +92,7 @@ exports.likeVideo = async (req, res) => {
   try {
     const video = await Video.findById(req.params.videoId);
     if (!video) return res.status(404).json({ msg: 'Video not found' });
+
     video.likes += 1;
     await video.save();
     res.json({ likes: video.likes });
