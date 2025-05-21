@@ -7,12 +7,15 @@ const fs = require('fs');
 
 const { uploadVideo, getVideos, likeVideo } = require('../controllers/videoController');
 
-const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// Create structured uploads directory: uploads/videos and uploads/thumbnails
+const UPLOADS_BASE_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '..', 'uploads');
+const VIDEO_DIR = path.join(UPLOADS_BASE_DIR, 'videos');
+
+if (!fs.existsSync(VIDEO_DIR)) fs.mkdirSync(VIDEO_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR);
+    cb(null, VIDEO_DIR);
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}_${file.originalname}`);
