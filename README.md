@@ -1,5 +1,7 @@
 # QuickPeek - VIDEO UPLOAD & PREVIEW APP
 
+Check the live project - https://drive.google.com/file/d/1zpdKUz4RdDDdYUEkllb4rAU9LC_qsabD/view?usp=drive_link
+
 QuickPeek is a mobile app where users can register, upload videos, view auto-generated thumbnails, and like content. It uses:
 - React Native (Expo) for the frontend
 - Node.js + Express.js for the backend
